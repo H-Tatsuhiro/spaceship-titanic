@@ -1,0 +1,44 @@
+PassengerId
+
+XXXX-YYの形式で、XXXXが同じ乗客は一緒に旅行しているグループを指している。
+グループが同じでも行先が違う可能性はある。
+欠損値はなし。
+
+HomePlanet
+
+CryoSleep
+
+航海中に仮死状態になることを選んだか選んでないかのデータ。
+仮死状態になるとキャビンに閉じ込められる。
+この値がTrueの場合、RoomService, FoodCourt, ShoppingMallは0.0が正しい。Trueで欠損していれば0を代入すべき。
+nullの場合、amount_colsの中で0でないものがあればFalseでそうでなければTrueにしてみる。
+
+Cabin
+
+客室。
+位置によっては別次元に転送されやすい場合がありそう。
+これも分割してLabel Encodingをまずする。
+
+Age
+
+年齢。正規化と標準化をしてみる。
+
+VIP
+
+RoomService, FoodCourt, ShoppingMall, Spa, VRDeck
+
+Name
+
+乗客の名前。欠損してる場合もあり。
+「下の名前＋苗字」の形式。
+グループが一緒かつ苗字が一緒の場合は家族の可能性が多い。
+分割してLabel Encodingしてみるのもいい。
+
+Transported
+
+トラブルによって別の次元に転送されたかどうかを表す。
+乗客側からしたら別次元に転送されるのは好ましくない。
+これを分類タスクとして予測する。
+
+
+

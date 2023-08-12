@@ -1,12 +1,39 @@
 import numpy as np
 import pandas as pd
 from sklearn.svm import LinearSVC
-from sklearn.preprocessing import LabelEncoder
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 
 df_train = pd.read_csv("./train.csv")
 df_test = pd.read_csv("./test.csv")
 
-df_train = df_train.fillna({"CryoSleep": 2, "VIP": 2, "HomePlanet": "null", "Cabin": "null", "Destination": "null", "Age": 200, "RoomService":  15000, "FoodCourt": 30000, "ShoppingMall": 25000, "Spa": -1, "VRDeck": -1, "Name": "null"})
+amount_cols = ["RoomService", "FoodCourt", "ShoppingMall", "Spa", "VRDeck"]
+df_train.loc[df_train['CryoSleep']==True, amount_cols] = 0.0
+
+firstName = []
+lastName = []
+for name in df_train['Name']:
+    if type(name) != str:
+        firstName.append("null"), lastName.append("null")
+    else :
+        firstName.append(name.split(' ')[0]), lastName.append(name.split(' ')[1])
+df_train.drop('Name', axis=1, inplace=True)
+df_train['FirstName'] = firstName
+df_train['LastName'] = lastName
+
+mean_imputer = SimpleImputer(strategy='mean')
+
+num_cols = ["Age", "RoomService", "FoodCourt", "Spa", "ShoppingMall", "VRDeck"]
+for col in num_cols:
+    df_train[[col]] = mean_imputer.fit_transform(df_train[[col]])
+
+sscaler = StandardScaler()
+df_train_std = pd.DataFrame(sscaler.fit_transform(df_train.loc[:, num_cols]), columns=num_cols)
+
+for col in num_cols:
+    df_train[col] = df_train_std[col]
+
+df_train = df_train.fillna({"CryoSleep": 2, "VIP": 2, "HomePlanet": "null", "Cabin": "null", "Destination": "null"})
 
 encoder = LabelEncoder()
 
@@ -24,11 +51,31 @@ model.fit(X_train, y_train)
 
 df_test_index = df_test.loc[:, ['PassengerId']]
 
-df_test = df_test.fillna({"CryoSleep": 2, "VIP": 2, "HomePlanet": "null", "Cabin": "null", "Destination": "null", "Age": 200, "RoomService":  15000, "FoodCourt": 30000, "ShoppingMall": 25000, "Spa": -1, "VRDeck": -1, "Name": "null"})
+df_test.loc[df_test['CryoSleep']==True, amount_cols] = 0.0
+
+firstName = []
+lastName = []
+for name in df_test['Name']:
+    if type(name) != str:
+        firstName.append("null"), lastName.append("null")
+    else :
+        firstName.append(name.split(' ')[0]), lastName.append(name.split(' ')[1])
+df_test.drop('Name', axis=1, inplace=True)
+df_test['FirstName'] = firstName
+df_test['LastName'] = lastName
+
+for col in num_cols:
+    df_test[[col]] = mean_imputer.fit_transform(df_test[[col]])
+
+df_test_std = pd.DataFrame(sscaler.fit_transform(df_test.loc[:, num_cols]), columns=num_cols)
+
+for col in num_cols:
+    df_test[col] = df_test_std[col]
+
+df_test = df_test.fillna({"CryoSleep": 2, "VIP": 2, "HomePlanet": "null", "Cabin": "null", "Destination": "null"})
 
 for cname in df_test.columns:
     df_test[cname] = encoder.fit_transform(df_test[cname].values)
-
 
 X_test = df_test.values
 y_test = model.predict(X_test)
